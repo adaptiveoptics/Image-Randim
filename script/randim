@@ -11,13 +11,9 @@ use File::Temp ();
 use File::Copy;
 use IO::Prompter;
 
-my @source = ({ url  => 'https://api.desktoppr.co/1/wallpapers/random',
-		name => 'Desktoppr',
-	      },
-	      { url  => 'https://api.unsplash.com/photos/random?client_id=03ad5bfbaa0acd6c96a728d425e533683ec25e5fb7fcf99f6461720b3d0d75a1',
-		name => 'Unsplash',
-	      },
-    );
+use lib 'lib';
+use Image::Randim::Image;
+use Image::Randim::Source;
 
 my $req_timeout   = 20;
 my $output_dir    = $ENV{'HOME'}.'/Pictures/Desktop/';
@@ -36,22 +32,22 @@ unless (-d $save_to_dir) { make_path($save_to_dir, {verbose => 1}) };
 my $quit = 0;
 while (!$quit) {
 
-    my $src = $source[int(rand(scalar @source))];
-    my $img_info_url = $$src{'url'};
-    
-    my $data = get_json($img_info_url, $req_timeout);
-    my $info;
-    if ($$src{'name'} eq 'Desktoppr') {
-	$info = parse_desktoppr_json($data);
-    } elsif ($$src{'name'} eq 'Unsplash') {
-	$info = parse_unsplash_json($data);
+    my $source = Image::Randim::Source->new;
+    $source->set_random_provider;
+
+    my $data = get_json($source->url, $req_timeout);
+    my $image;
+    if ($source->name eq 'Desktoppr') {
+	$image = parse_desktoppr_json($data);
+    } elsif ($source->name eq 'Unsplash') {
+	$image = parse_unsplash_json($data);
     }
 
-    my $img_url = $$info{'url'};
+    my $img_url = $image->url;
+    say "Size:    ".$image->width.'x'.$image->height;
+    say "URL:     ".$image->link;
+    say "Owner:   ".($image->owner || 'UNDEFINED');
     say "Img URL: ".$img_url;
-    say "Size: ".$$info{'width'}.'x'.$$info{'height'};
-    say "URL: ".$$info{'link'};
-    say "Owner: ".$$info{'owner'} if $$info{'owner'};
     print "Getting image...";
 
     my $temp = File::Temp->new;
@@ -72,6 +68,7 @@ while (!$quit) {
     if (!$filename || $filename =~ /^\./) {
 	die "Bad filename $filename\n";
     }
+    $image->filename($filename);
 
     remove_tree($output_dir, {keep_root => 1});
     move($temp->filename, $output_dir.$filename);
@@ -88,25 +85,33 @@ while (!$quit) {
 
 sub parse_unsplash_json {
     my $data = shift;
-    return { url    => $$data{'urls'}{'full'},
-	     id     => $$data{'id'},
-	     width  => $$data{'width'},
-	     height => $$data{'height'},
-	     link   => $$data{'links'}{'html'},
-	     owner  => $$data{'user'}{'username'},
-    };
+    my $image = Image::Randim::Image->new(
+	url    => $$data{'urls'}{'full'},
+	id     => $$data{'id'},
+	width  => $$data{'width'},
+	height => $$data{'height'},
+	link   => $$data{'links'}{'html'},
+	);
+    if (exists $$data{'user'}{'username'}) {
+	$image->owner($$data{'user'}{'username'});
+    }
+    return $image;
 }
 
 sub parse_desktoppr_json {
     my $data = shift;
     $data = $$data{'response'};
-    return { url    => $$data{'image'}{'url'},
-	     id     => $$data{'id'},
-	     width  => $$data{'width'},
-	     height => $$data{'height'},
-	     link   => $$data{'url'},
-	     owner  => $$data{'uploader'},
-    };
+    my $image = Image::Randim::Image->new(
+	url    => $$data{'image'}{'url'},
+	id     => $$data{'id'},
+	width  => $$data{'width'},
+	height => $$data{'height'},
+	link   => $$data{'url'},
+	);
+    if (exists $$data{'uploader'}) {
+	$image->owner($$data{'uploader'});
+    }
+    return $image;
 }
 
 sub get_json {

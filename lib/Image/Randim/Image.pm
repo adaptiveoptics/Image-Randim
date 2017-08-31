@@ -20,7 +20,7 @@ has 'filename' => ( is  => 'rw',
 		    isa => 'Str',
     );
 has 'owner' => ( is  => 'rw',
-		 isa => 'Str',
+		 isa => 'Maybe[Str]',
     );
 has 'link' => ( is  => 'rw',
 		isa => 'Str',
