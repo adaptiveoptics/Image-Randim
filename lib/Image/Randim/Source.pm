@@ -9,6 +9,10 @@ usesub Image::Randim::Source;
 has 'src_obj' => ( is  => 'ro',
 		   isa => 'Image::Randim::Source::Role',
     );
+has 'timeout' => ( is  => 'rw',
+		   isa => 'Int',
+		   default => 20,
+    );
 
 sub list {
     my $self = shift;

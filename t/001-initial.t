@@ -50,6 +50,8 @@ like $unsplash->url, qr!^https://api.unsplash.com!, 'Unsplash API URL';
 ## Source Testing
 ##
 ok my $source = Image::Randim::Source->new, 'Image::Random::Source instantiates';
+can_ok $source, 'src_obj';
+can_ok $source, 'timeout';
 can_ok $source, 'list';
 can_ok $source, 'set_provider';
 can_ok $source, 'set_random_provider';
@@ -70,5 +72,7 @@ for (1..25) {
     last;
 }
 ok $random_test, 'Random provider test does valid providers';
+dies_ok {$source->timeout(42.34)} 'dies on non-integer timeout';
+ok $source->timeout(25), 'timeout on integer';
 
 done_testing;
