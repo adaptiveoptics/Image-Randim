@@ -1,0 +1,125 @@
+#!/usr/bin/env perl
+
+use v5.20;
+use warnings;
+use strict;
+use REST::Client;
+use JSON;
+use LWP::UserAgent ();
+use File::Path qw(make_path remove_tree);
+use File::Temp ();
+use File::Copy;
+use IO::Prompter;
+
+my @source = ({ url  => 'https://api.desktoppr.co/1/wallpapers/random',
+		name => 'Desktoppr',
+	      },
+	      { url  => 'https://api.unsplash.com/photos/random?client_id=03ad5bfbaa0acd6c96a728d425e533683ec25e5fb7fcf99f6461720b3d0d75a1',
+		name => 'Unsplash',
+	      },
+    );
+
+my $req_timeout   = 20;
+my $output_dir    = $ENV{'HOME'}.'/Pictures/Desktop/';
+my $delete_old    = 1;
+my $save_to_dir   = $ENV{'HOME'}.'/Pictures/Desktop-Saved/';
+
+$output_dir  =~ s!/*$!/!;
+$save_to_dir =~ s!/*$!/!;
+
+if (!$output_dir || $output_dir eq '/' || $output_dir eq $ENV{'HOME'}) {
+    die "Unlikely output dir $output_dir";
+}
+unless (-d $output_dir)  { make_path($output_dir, {verbose => 1}) };
+unless (-d $save_to_dir) { make_path($save_to_dir, {verbose => 1}) };
+
+my $quit = 0;
+while (!$quit) {
+
+    my $src = $source[int(rand(scalar @source))];
+    my $img_info_url = $$src{'url'};
+    
+    my $data = get_json($img_info_url, $req_timeout);
+    my $info;
+    if ($$src{'name'} eq 'Desktoppr') {
+	$info = parse_desktoppr_json($data);
+    } elsif ($$src{'name'} eq 'Unsplash') {
+	$info = parse_unsplash_json($data);
+    }
+
+    my $img_url = $$info{'url'};
+    say "Img URL: ".$img_url;
+    say "Size: ".$$info{'width'}.'x'.$$info{'height'};
+    say "URL: ".$$info{'link'};
+    say "Owner: ".$$info{'owner'} if $$info{'owner'};
+    print "Getting image...";
+
+    my $temp = File::Temp->new;
+    my $ua = LWP::UserAgent->new;
+    $ua->timeout($req_timeout);
+    my $response = $ua->get($img_url, ':content_file' => $temp->filename);
+    unless ($response->is_success) {
+	warn "Error retrieving image at $img_url: ".$response->status_line." - skipping\n\n";
+	next;
+    }
+    print "\n";
+    
+    my $filename = $response->filename;
+    unless ($filename =~ /\.[a-zA-Z]{3,4}$/) {
+	warn "Bad file extension in filename $filename - adding .jpg\n";
+	$filename .= '.jpg';
+    }
+    if (!$filename || $filename =~ /^\./) {
+	die "Bad filename $filename\n";
+    }
+
+    remove_tree($output_dir, {keep_root => 1});
+    move($temp->filename, $output_dir.$filename);
+
+    my $saveit = prompt("Do you want to save this image locally?", -yesno, -single);
+    if ($saveit) {
+	say "saving $filename to $save_to_dir";
+	copy($output_dir.$filename, $save_to_dir);
+    }
+
+    $quit = prompt("Quit?", -yesno, -single);
+    print "\n";
+}
+
+sub parse_unsplash_json {
+    my $data = shift;
+    return { url    => $$data{'urls'}{'full'},
+	     id     => $$data{'id'},
+	     width  => $$data{'width'},
+	     height => $$data{'height'},
+	     link   => $$data{'links'}{'html'},
+	     owner  => $$data{'user'}{'username'},
+    };
+}
+
+sub parse_desktoppr_json {
+    my $data = shift;
+    $data = $$data{'response'};
+    return { url    => $$data{'image'}{'url'},
+	     id     => $$data{'id'},
+	     width  => $$data{'width'},
+	     height => $$data{'height'},
+	     link   => $$data{'url'},
+	     owner  => $$data{'uploader'},
+    };
+}
+
+sub get_json {
+    my ($url, $timeout) = shift;
+    my $client = REST::Client->new;
+    $client->setTimeout($timeout);
+    $client->GET($url);
+    my $rc = $client->responseCode;
+    if ($rc > 200) {
+	die "Received a response code of $rc from $url\n";
+    }
+    return JSON->new->decode($client->responseContent);
+}
+
+
+# 
