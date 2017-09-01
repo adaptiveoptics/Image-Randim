@@ -3,6 +3,7 @@
 use v5.20;
 use warnings;
 use strict;
+use Getopt::Long;
 use LWP::UserAgent ();
 use File::Path qw(make_path remove_tree);
 use File::Temp ();
@@ -13,12 +14,29 @@ use lib 'lib';
 use Image::Randim::Source;
 
 my $req_timeout   = 20;
-my $output_dir    = $ENV{'HOME'}.'/Pictures/Desktop/';
-my $delete_old    = 1;
+my $output_dir    = $ENV{'HOME'}.'/Pictures/Desktop-Randim/';
+my $no_delete     = 0;
 my $save_to_dir   = $ENV{'HOME'}.'/Pictures/Desktop-Saved/';
+my $show_url      = 0;
+my $help          = 0;
+my $list_sources  = 0;
+my $no_prompt     = 0;
+
+GetOptions('show-url'      => \$show_url,
+	   'list-sources'  => \$list_sources,
+	   'output-dir=s'  => \$output_dir,
+	   'save-to-dir=s' => \$save_to_dir,
+	   'no-delete'     => \$no_delete,
+	   'timeout:i'     => \$req_timeout,
+	   'no-prompt'     => \$no_prompt,
+	   'help'          => \$help,
+    ) or die 'Bad options';
 
 $output_dir  =~ s!/*$!/!;
 $save_to_dir =~ s!/*$!/!;
+
+if ($help)         { &help; exit }
+if ($list_sources) { &list_sources; exit }
 
 if (!$output_dir || $output_dir eq '/' || $output_dir eq $ENV{'HOME'}) {
     die "Unlikely output dir $output_dir";
@@ -28,16 +46,19 @@ unless (-d $save_to_dir) { make_path($save_to_dir, {verbose => 1}) };
 
 my $quit = 0;
 while (!$quit) {
-
-    my $source = Image::Randim::Source->new;
+    my $source = Image::Randim::Source->new(timeout => $req_timeout);
     $source->set_random_provider;
     my $image = $source->get_image;
 
     my $img_url = $image->url;
-    say "Size:    ".$image->width.'x'.$image->height;
-    say "URL:     ".$image->link;
-    say "Owner:   ".($image->owner || 'UNDEFINED');
-    say "Img URL: ".$img_url;
+    say   '=' x 40;
+    say   "Size:    ".$image->width.'x'.$image->height;
+    say   "URL:     ".$image->link;
+    print "Owner:   ".($image->owner || 'UNDEFINED');
+    print ' ('.$image->owner_name.')' if $image->owner_name;
+    say   ' @ '.$source->name;
+    say   "Img URL: ".$img_url if $show_url;
+    say   '=' x 40;
     print "Getting image...";
 
     my $temp = File::Temp->new;
@@ -52,23 +73,65 @@ while (!$quit) {
     
     my $filename = $response->filename;
     unless ($filename =~ /\.[a-zA-Z]{3,4}$/) {
-	warn "Bad file extension in filename $filename - adding .jpg\n";
+	warn "Bad or no filename extension provided for $filename - adding .jpg\n";
 	$filename .= '.jpg';
     }
-    if (!$filename || $filename =~ /^\./) {
-	die "Bad filename $filename\n";
+    if (!$filename || $filename =~ /^[\.\/]/) {
+	die "Bad or no filename $filename\n";
     }
     $image->filename($filename);
 
-    remove_tree($output_dir, {keep_root => 1});
+    remove_tree($output_dir, {keep_root => 1}) unless $no_delete;
     move($temp->filename, $output_dir.$filename);
 
-    my $saveit = prompt("Do you want to save this image locally?", -yesno, -single);
-    if ($saveit) {
-	say "saving $filename to $save_to_dir";
-	copy($output_dir.$filename, $save_to_dir);
+    unless ($no_prompt) {
+	my $saveit = prompt("Do you want to save this image locally?", -yesno, -single);
+	if ($saveit) {
+	    say "saving $filename to $save_to_dir";
+	    copy($output_dir.$filename, $save_to_dir);
+	}
     }
 
-    $quit = prompt("Quit?", -yesno, -single);
+    if ($no_prompt) {
+	$quit = 1;
+    } else {
+	$quit = prompt("Quit?", -yesno, -single);
+    }
     print "\n";
+}
+
+sub list_sources {
+    my $source = Image::Randim::Source->new;
+    map say, @{$source->list};
+}
+
+sub help {
+    print <<"EOB"
+
+Download a random image from a random Internet source.
+
+--list-sources
+    List supported sources by installed plugins.
+--show-url
+    Show the image URL in the info display.
+
+--output-dir <dir> (default: $output_dir)
+    Directory where image will be downloaded. BY DEFAULT THIS MUST BE
+    EMPTY AND ALL FILES THERE WILL BE DELETED.
+
+--no-delete
+    Do not delete everything from the --output-dir before downloading.
+
+--save-to-dir <dir> (default: $save_to_dir)
+    Directory where images can be "permanently saved".
+
+--timeout <seconds> (default: $req_timeout)
+    How many whole seconds to wait for each Internet request to
+    respond.
+
+--no-prompt
+    Just grab a random image and exit.
+
+EOB
+
 }

@@ -10,7 +10,7 @@ requires 'url', 'name', 'get_image';
 
 has 'timeout' => ( is  => 'rw',
 		   isa => 'Int',
-		   default => 25,
+		   default => 20,
     );
 
 sub get_response {
@@ -24,7 +24,6 @@ sub get_response {
 	    . " received a response code of $rc from "
 	    . $self->url . "\n";
     }
-    # return JSON->new->decode($client->responseContent);
     return $client->responseContent;
 }
 

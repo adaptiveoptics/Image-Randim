@@ -22,6 +22,9 @@ has 'filename' => ( is  => 'rw',
 has 'owner' => ( is  => 'rw',
 		 isa => 'Maybe[Str]',
     );
+has 'owner_name' => ( is  => 'rw',
+		      isa => 'Maybe[Str]',
+    );
 has 'link' => ( is  => 'rw',
 		isa => 'Str',
     );

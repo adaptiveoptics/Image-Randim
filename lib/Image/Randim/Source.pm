@@ -23,6 +23,7 @@ sub list {
 sub set_provider {
     my ($self, $source_name) = @_;
     $self->{src_obj} = "Image::Randim::Source::$source_name"->new;
+    $self->{src_obj}->timeout($self->timeout);
     return $self->src_obj;
 }
 

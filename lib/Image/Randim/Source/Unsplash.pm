@@ -35,6 +35,9 @@ sub get_image {
     if (exists $$data{'user'}{'username'}) {
 	$image->owner($$data{'user'}{'username'});
     }
+    if (exists $$data{'user'}{'name'}) {
+	$image->owner_name($$data{'user'}{'name'});
+    }
     
     return $image;
 }
