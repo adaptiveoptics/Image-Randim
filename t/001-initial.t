@@ -14,6 +14,7 @@ BEGIN {
     use_ok('File::Temp');
     use_ok('File::Copy');
     use_ok('IO::Prompter');
+    use_ok('Module::Find');
     use_ok('Image::Randim::Image');
     use_ok('Image::Randim::Source');
     use_ok('Image::Randim::Source::Desktoppr');
