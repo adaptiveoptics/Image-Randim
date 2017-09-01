@@ -21,6 +21,9 @@ my $show_url      = 0;
 my $help          = 0;
 my $list_sources  = 0;
 my $no_prompt     = 0;
+my $gnome3        = 0;
+my $viewer;
+my $viewer_default = 'eog';
 
 GetOptions('show-url'      => \$show_url,
 	   'list-sources'  => \$list_sources,
@@ -29,6 +32,8 @@ GetOptions('show-url'      => \$show_url,
 	   'no-delete'     => \$no_delete,
 	   'timeout:i'     => \$req_timeout,
 	   'no-prompt'     => \$no_prompt,
+	   'gnome3'        => \$gnome3,
+	   'viewer:s'      => \$viewer,
 	   'help'          => \$help,
     ) or die 'Bad options';
 
@@ -83,12 +88,22 @@ while (!$quit) {
 
     remove_tree($output_dir, {keep_root => 1}) unless $no_delete;
     move($temp->filename, $output_dir.$filename);
+    if ($gnome3) {
+	`gsettings set org.gnome.desktop.background picture-uri "file:///$output_dir$filename"`;
+    }
+    if (defined $viewer) {
+	$viewer = $viewer ? $viewer : $viewer_default;
+	system("$viewer $output_dir$filename &");
+    }
 
     unless ($no_prompt) {
 	my $saveit = prompt("Do you want to save this image locally?", -yesno, -single);
 	if ($saveit) {
 	    say "saving $filename to $save_to_dir";
 	    copy($output_dir.$filename, $save_to_dir);
+	    if ($gnome3) {
+		`gsettings set org.gnome.desktop.background picture-uri "file:///$save_to_dir$filename"`;
+	    }
 	}
     }
 
@@ -131,6 +146,11 @@ Download a random image from a random Internet source.
 
 --no-prompt
     Just grab a random image and exit.
+--gnome3
+    Set the desktop background to the image in Gnome3
+
+--viewer [<program>] (default: $viewer_default)
+    Display image in default viewer or the one specified.
 
 EOB
 
