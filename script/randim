@@ -34,14 +34,7 @@ while (!$quit) {
 
     my $source = Image::Randim::Source->new;
     $source->set_random_provider;
-
-    my $data = get_json($source->url, $req_timeout);
-    my $image;
-    if ($source->name eq 'Desktoppr') {
-	$image = parse_desktoppr_json($data);
-    } elsif ($source->name eq 'Unsplash') {
-	$image = parse_unsplash_json($data);
-    }
+    my $image = $source->get_image;
 
     my $img_url = $image->url;
     say "Size:    ".$image->width.'x'.$image->height;
@@ -82,49 +75,3 @@ while (!$quit) {
     $quit = prompt("Quit?", -yesno, -single);
     print "\n";
 }
-
-sub parse_unsplash_json {
-    my $data = shift;
-    my $image = Image::Randim::Image->new(
-	url    => $$data{'urls'}{'full'},
-	id     => $$data{'id'},
-	width  => $$data{'width'},
-	height => $$data{'height'},
-	link   => $$data{'links'}{'html'},
-	);
-    if (exists $$data{'user'}{'username'}) {
-	$image->owner($$data{'user'}{'username'});
-    }
-    return $image;
-}
-
-sub parse_desktoppr_json {
-    my $data = shift;
-    $data = $$data{'response'};
-    my $image = Image::Randim::Image->new(
-	url    => $$data{'image'}{'url'},
-	id     => $$data{'id'},
-	width  => $$data{'width'},
-	height => $$data{'height'},
-	link   => $$data{'url'},
-	);
-    if (exists $$data{'uploader'}) {
-	$image->owner($$data{'uploader'});
-    }
-    return $image;
-}
-
-sub get_json {
-    my ($url, $timeout) = shift;
-    my $client = REST::Client->new;
-    $client->setTimeout($timeout);
-    $client->GET($url);
-    my $rc = $client->responseCode;
-    if ($rc > 200) {
-	die "Received a response code of $rc from $url\n";
-    }
-    return JSON->new->decode($client->responseContent);
-}
-
-
-# 

@@ -1,6 +1,7 @@
 package Image::Randim::Source::Unsplash;
 use v5.20;
 use warnings;
+use JSON;
 use Moose;
 
 has 'name' => ( is  => 'ro',
@@ -13,6 +14,25 @@ has 'url' => ( is  => 'ro',
     );
 
 with 'Image::Randim::Source::Role';
+
+sub get_image {
+    my $self = shift;
+    my $data = JSON->new->decode($self->get_response);
+    
+    my $image = Image::Randim::Image->new(
+	url    => $$data{'urls'}{'full'},
+	id     => $$data{'id'},
+	width  => $$data{'width'},
+	height => $$data{'height'},
+	link   => $$data{'links'}{'html'},
+	);
+    
+    if (exists $$data{'user'}{'username'}) {
+	$image->owner($$data{'user'}{'username'});
+    }
+    
+    return $image;
+}
 
 __PACKAGE__->meta->make_immutable;
 1;

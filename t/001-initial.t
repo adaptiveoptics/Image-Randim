@@ -36,6 +36,8 @@ can_ok $image, 'link';
 ok my $desktoppr = Image::Randim::Source::Desktoppr->new, 'Image::Randim::Source::Desktoppr instantiates';
 can_ok $desktoppr, 'name';
 can_ok $desktoppr, 'url';
+can_ok $desktoppr, 'get_image';
+can_ok $desktoppr, 'timeout';
 is $desktoppr->name, 'Desktoppr', 'Correct Desktoppr name';
 like $desktoppr->url, qr!^https://api.desktoppr.co!, 'Desktoppr API URL';
 
@@ -44,6 +46,8 @@ like $desktoppr->url, qr!^https://api.desktoppr.co!, 'Desktoppr API URL';
 ok my $unsplash = Image::Randim::Source::Unsplash->new, 'Image::Randim::Source::Unsplash instantiates';
 can_ok $unsplash, 'name';
 can_ok $unsplash, 'url';
+can_ok $unsplash, 'get_image';
+can_ok $unsplash, 'timeout';
 is $unsplash->name, 'Unsplash', 'Correct Unsplash name';
 like $unsplash->url, qr!^https://api.unsplash.com!, 'Unsplash API URL';
 
@@ -74,5 +78,12 @@ for (1..25) {
 ok $random_test, 'Random provider test does valid providers';
 dies_ok {$source->timeout(42.34)} 'dies on non-integer timeout';
 ok $source->timeout(25), 'timeout on integer';
+
+## Test actual get
+##
+$source = Image::Randim::Source->new;
+$source->set_random_provider;
+ok my $image = $source->get_image, 'Source get_image';
+ok length($image->url) > 5, 'Image URL has more than 10 characters';
 
 done_testing;

@@ -44,5 +44,11 @@ sub name {
     return $self->src_obj->name;
 }
 
+sub get_image {
+    my $self = shift;
+    die 'No valid provider' unless $self->src_obj;
+    return $self->src_obj->get_image;
+}
+
 __PACKAGE__->meta->make_immutable;
 1;
