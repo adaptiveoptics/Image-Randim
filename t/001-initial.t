@@ -83,7 +83,7 @@ ok $source->timeout(25), 'timeout on integer';
 ##
 $source = Image::Randim::Source->new;
 $source->set_random_provider;
-ok my $image = $source->get_image, 'Source get_image';
+ok $image = $source->get_image, 'Source get_image';
 ok length($image->url) > 5, 'Image URL has more than 10 characters';
 
 done_testing;
