@@ -24,6 +24,7 @@ my $gnome3        = 0;
 my $unsplash_key;
 my $providers;
 my $viewer;
+my $version;
 my $viewer_default = 'eog';
 
 GetOptions('show-url'       => \$show_url,
@@ -37,6 +38,7 @@ GetOptions('show-url'       => \$show_url,
 	   'gnome3'         => \$gnome3,
 	   'unsplash-key=s' => \$unsplash_key,
 	   'viewer:s'       => \$viewer,
+	   'version'        => \$version,
 	   'help'           => \$help,
     ) or die 'Bad options';
 
@@ -44,6 +46,7 @@ $output_dir  =~ s!/*$!/!;
 $save_to_dir =~ s!/*$!/!;
 
 if ($help)         { &help; exit }
+if ($version)      { say $VERSION; exit }
 if ($list_sources) { &list_sources; exit }
 
 if (!$output_dir || $output_dir eq '/' || $output_dir eq $ENV{'HOME'}) {
@@ -167,6 +170,9 @@ Download a random image from a random Internet source.
     the case for your use, you can register for your own developer
     client key and enter it here.
 
+--version
+    Print the version.
+
 EOB
 
 }
@@ -282,6 +288,9 @@ frequently.
       the author's, but they can become rate-limited. If you find that's
       the case for your use, you can register for your own developer
       client key and enter it here.
+
+  --version
+      Print the version.
 
 =head1 AUTHOR
 
