@@ -1,4 +1,5 @@
 package Image::Randim::Source;
+our $VERSION = '0.01';
 use v5.20;
 use Moose;
 use Module::Find;

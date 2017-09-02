@@ -1,8 +1,8 @@
-bitcoin-cli.txt
 ^.git
 ~$
 # Makemaker generated files and dirs.
 ^MANIFEST\.
+^MYMETA\.
 ^Makefile$
 ^blib/
 ^MakeMaker-\d

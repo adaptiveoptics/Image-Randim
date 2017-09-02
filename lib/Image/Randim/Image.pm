@@ -1,4 +1,5 @@
 package Image::Randim::Image;
+our $VERSION = '0.01';
 use v5.20;
 use warnings;
 use Moose;

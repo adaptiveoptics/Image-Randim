@@ -1,8 +1,9 @@
 use ExtUtils::MakeMaker::CPANfile;
 WriteMakefile (
-    NAME     => 'Randim',
+    NAME     => 'Image::Randim',
     VERSION  => '0.01',
     AUTHOR   => 'Mark Rushing <mark@orbislumem.net>',
-    EXE_FILES => ['randim'],
+    MIN_PERL_VERSION => '5.020',
+    EXE_FILES => ['script/randim'],
     );
 
