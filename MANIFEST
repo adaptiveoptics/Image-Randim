@@ -1,5 +1,6 @@
+Changes
 cpanfile
-Image-Randim-0.01.tar.gz
+Image-Randim-0.01.tar
 lib/Image/Randim.pm
 lib/Image/Randim/Image.pm
 lib/Image/Randim/Source.pm
