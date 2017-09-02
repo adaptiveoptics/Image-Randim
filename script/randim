@@ -1,7 +1,6 @@
-#!/usr/bin/env perl
+#!/usr/bin/perl -w
 
 use v5.20;
-use warnings;
 use strict;
 use Getopt::Long;
 use LWP::UserAgent ();
@@ -22,19 +21,23 @@ my $help          = 0;
 my $list_sources  = 0;
 my $no_prompt     = 0;
 my $gnome3        = 0;
+my $unsplash_key;
+my $providers;
 my $viewer;
 my $viewer_default = 'eog';
 
-GetOptions('show-url'      => \$show_url,
-	   'list-sources'  => \$list_sources,
-	   'output-dir=s'  => \$output_dir,
-	   'save-to-dir=s' => \$save_to_dir,
-	   'no-delete'     => \$no_delete,
-	   'timeout:i'     => \$req_timeout,
-	   'no-prompt'     => \$no_prompt,
-	   'gnome3'        => \$gnome3,
-	   'viewer:s'      => \$viewer,
-	   'help'          => \$help,
+GetOptions('show-url'       => \$show_url,
+	   'list-sources'   => \$list_sources,
+	   'source=s@'      => \$providers,
+	   'output-dir=s'   => \$output_dir,
+	   'save-to-dir=s'  => \$save_to_dir,
+	   'no-delete'      => \$no_delete,
+	   'timeout:i'      => \$req_timeout,
+	   'no-prompt'      => \$no_prompt,
+	   'gnome3'         => \$gnome3,
+	   'unsplash-key=s' => \$unsplash_key,
+	   'viewer:s'       => \$viewer,
+	   'help'           => \$help,
     ) or die 'Bad options';
 
 $output_dir  =~ s!/*$!/!;
@@ -52,7 +55,10 @@ unless (-d $save_to_dir) { make_path($save_to_dir, {verbose => 1}) };
 my $quit = 0;
 while (!$quit) {
     my $source = Image::Randim::Source->new(timeout => $req_timeout);
-    $source->set_random_provider;
+    $source->set_random_provider($providers);
+    if ($unsplash_key && $source->name eq 'Unsplash') {
+	$source->src_obj->api_key($unsplash_key);
+    }
     my $image = $source->get_image;
 
     my $img_url = $image->url;
@@ -129,10 +135,13 @@ Download a random image from a random Internet source.
     List supported sources by installed plugins.
 --show-url
     Show the image URL in the info display.
+--source <name>
+    By default all sources are used. Specify --source multiple times
+    with a source name to limit images to just those sources.
 
 --output-dir <dir> (default: $output_dir)
     Directory where image will be downloaded. BY DEFAULT THIS MUST BE
-    EMPTY AND ALL FILES THERE WILL BE DELETED.
+    EMPTY AND ALL FILES/DIRECTORIES THERE WILL BE DELETED.
 
 --no-delete
     Do not delete everything from the --output-dir before downloading.
@@ -151,6 +160,12 @@ Download a random image from a random Internet source.
 
 --viewer [<program>] (default: $viewer_default)
     Display image in default viewer or the one specified.
+
+--unsplash-key <key>
+    Unsplash requires a so-called developer key. The default one is
+    the author's, but they can become rate-limited. If you find that's
+    the case for your use, you can register for your own developer
+    client key and enter it here.
 
 EOB
 

@@ -49,6 +49,7 @@ can_ok $unsplash, 'name';
 can_ok $unsplash, 'url';
 can_ok $unsplash, 'get_image';
 can_ok $unsplash, 'timeout';
+can_ok $unsplash, 'api_key';
 is $unsplash->name, 'Unsplash', 'Correct Unsplash name';
 like $unsplash->url, qr!^https://api.unsplash.com!, 'Unsplash API URL';
 

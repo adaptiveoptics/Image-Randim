@@ -40,9 +40,9 @@ Image::Randim::Image - Image object
 
 =head1 SYNOPSIS
 
-  use Image::Random::Source;
+  use Image::Randim::Source;
   
-  $source = Image::Random::Source->new;
+  $source = Image::Randim::Source->new;
   $source->set_provider('Desktoppr');
   $image = $source->get_image;
 

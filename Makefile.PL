@@ -3,5 +3,6 @@ WriteMakefile (
     NAME     => 'Randim',
     VERSION  => '0.01',
     AUTHOR   => 'Mark Rushing <mark@orbislumem.net>',
+    EXE_FILES => ['randim'],
     );
 
