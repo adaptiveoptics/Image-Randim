@@ -53,3 +53,92 @@ sub get_image {
 
 __PACKAGE__->meta->make_immutable;
 1;
+
+=pod
+
+=head1 NAME
+
+Image::Randim::Source - Pull a random image from a source
+
+=head1 SYNOPSIS
+
+  use Image::Random::Source;
+  
+  $source = Image::Random::Source->new;
+  $source->set_random_provider;
+  $image = $source->get_image;
+
+  say $image->url;
+
+=head1 DESCRIPTION
+
+This is the main class to instantiate when wanting to pull random
+image information from the defined sources.
+
+You can specifically state which source to use to pull a random image
+from by using the set_provider() method, or you can also let the
+provider be a random choice too by calling the method
+set_random_provider() instead.
+
+Nothing much will work until you call one of those two methods, except
+for list(), which returns a list of defined sources (providers of
+images).
+
+=head1 METHODS
+
+=head2 C<list>
+
+Return a list of supported providers (ones with "plugins").
+
+=head2 C<set_provider($provider_name)>
+
+Sets the provider name to use, to grab a random image. Valid ones can
+be found with the list() method.
+
+"Plugins" can be created to support more providers by implementing the
+Image::Randim::Source::Role
+
+=head2 C<set_random_provider>
+
+Chooses a random provider from the list() of possible providers and
+set_provider()'s to it.
+
+=head2 C<url>
+
+Returns the URL from which the provider information is gathered. You
+probably don't need to care about this.
+
+=head2 C<name>
+
+Returns the provider name (as it was set by set_provider())
+
+=head2 C<get_image>
+
+Returns an Image::Randim::Image object, populated with the necessary
+information to download the image, and image credits for the owner of
+the image, as well as reported dimensions of the image.
+
+=head1 ATTRIBUTES
+
+=head2 C<timeout>
+
+Gets or sets the timeout in seconds we will wait for a response from
+the provider's server for the information.
+
+=head2 C<src_obj>
+
+Gives access to the provider "plugin" object directly. You probably
+should not use this.
+
+=head1 AUTHOR
+
+Mark Rushing <mark@orbislumen.net>
+
+=head1 COPYRIGHT AND LICENSE
+
+This software is copyright (c) 2017 by Home Grown Systems, SPC.
+
+This is free software; you can redistribute it and/or modify it under
+the same terms as the Perl 5 programming language system itself.
+
+=cut
