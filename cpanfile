@@ -5,6 +5,7 @@ requires 'REST::Client' => '273';
 requires 'LWP::Protocol::https' => '6.06';
 requires 'IO::Prompter' => '0.004014';
 requires 'Module::Find' => '0.13';
+requires 'JSON' => '2.90';
 on test => sub {
     requires 'Test::More' => '0.88';
     requires 'Test::Exception' => '0.35';
