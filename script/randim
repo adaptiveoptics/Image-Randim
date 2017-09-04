@@ -15,6 +15,7 @@ use Image::Randim::Source;
 my $req_timeout   = 20;
 my $output_dir    = $ENV{'HOME'}.'/Pictures/Desktop-Randim/';
 my $no_delete     = 0;
+my $delete_after  = 0;
 my $save_to_dir   = $ENV{'HOME'}.'/Pictures/Desktop-Saved/';
 my $show_url      = 0;
 my $help          = 0;
@@ -33,6 +34,7 @@ GetOptions('show-url'       => \$show_url,
 	   'output-dir=s'   => \$output_dir,
 	   'save-to-dir=s'  => \$save_to_dir,
 	   'no-delete'      => \$no_delete,
+	   'delete-after'   => \$delete_after,
 	   'timeout:i'      => \$req_timeout,
 	   'no-prompt'      => \$no_prompt,
 	   'gnome3'         => \$gnome3,
@@ -95,8 +97,15 @@ while (!$quit) {
     }
     $image->filename($filename);
 
-    remove_tree($output_dir, {keep_root => 1}) unless $no_delete;
+    # Copy temp file over and clean
+    unless ($no_delete || $delete_after) {
+	remove_tree($output_dir, {keep_root => 1});
+    }
     copy($temp->filename, $output_dir.$filename);
+    if ($delete_after && !$no_delete) {
+	remove_files($output_dir, $filename);
+    }
+    
     if ($gnome3) {
 	`gsettings set org.gnome.desktop.background picture-uri "file:///$output_dir$filename"`;
     }
@@ -122,6 +131,19 @@ while (!$quit) {
 	$quit = prompt("Quit?", -yesno, -single);
     }
     print "\n";
+}
+
+sub remove_files {
+    my ($dir, $keep_file) = @_;
+    return unless -d $dir;
+    opendir(my $dirh, $dir) or die "Can't open output directory $dir";
+    while (readdir $dirh) {
+	next if /^\.+/;
+	next if $_ eq $keep_file;
+	next if -d $_;
+	unlink "$dir/$_";
+    }
+    closedir $dirh;
 }
 
 sub list_sources {

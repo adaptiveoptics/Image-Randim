@@ -1,3 +1,15 @@
+commit ac7e964f287e03f138cdc2630e9c2ac134948a01
+Author: Mark Rushing <mark@orbislumen.net>
+Date:   Sun Sep 3 04:45:47 2017 -0700
+
+    CPAN testing revealing failure to use JSON - needs to be put into cpanfile as dependency
+
+commit 3e878dd075c3956a64446c5cfc17e08e4c2dea1d
+Author: Mark Rushing <mark@orbislumen.net>
+Date:   Sat Sep 2 16:59:31 2017 -0700
+
+    Final admin file changes
+
 commit b81c71ef7f2c7ecd26b6a999b715389b819e7fbb
 Author: Mark Rushing <mark@orbislumen.net>
 Date:   Sat Sep 2 16:16:42 2017 -0700

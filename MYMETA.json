@@ -34,6 +34,7 @@
          "requires" : {
             "ExtUtils::MakeMaker" : "6.17",
             "IO::Prompter" : "0.004014",
+            "JSON" : "2.90",
             "LWP::Protocol::https" : "6.06",
             "Module::Find" : "0.13",
             "Moose" : "2.12",
@@ -50,6 +51,6 @@
       }
    },
    "release_status" : "stable",
-   "version" : "0.01",
+   "version" : "0.02",
    "x_serialization_backend" : "JSON::PP version 2.94"
 }
