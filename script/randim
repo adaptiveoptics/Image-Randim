@@ -1,6 +1,6 @@
 #!/usr/bin/perl -w
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 use v5.20;
 use strict;
 use Getopt::Long;
@@ -113,8 +113,7 @@ while (!$quit) {
     
     if ($gnome3) {
         `gsettings set org.gnome.desktop.background picture-uri "file:///$output_dir$filename"`;
-    }
-    if (defined $viewer) {
+    } else {
         $viewer = $viewer ? $viewer : $viewer_default;
         system("$viewer $output_dir$filename &");
     }
@@ -138,6 +137,11 @@ while (!$quit) {
     print "\n";
 }
 
+
+
+##
+## Remove files
+##
 sub remove_files {
     my ($dir, $keep_file) = @_;
     return unless -d $dir;
@@ -151,6 +155,9 @@ sub remove_files {
     closedir $dirh;
 }
 
+##
+## List image sources
+##
 sub list_sources {
     my $source = Image::Randim::Source->new;
     map say, @{$source->list};
