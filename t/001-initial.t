@@ -17,7 +17,7 @@ BEGIN {
     use_ok('Module::Find');
     use_ok('Image::Randim::Image');
     use_ok('Image::Randim::Source');
-    use_ok('Image::Randim::Source::Desktoppr');
+    #use_ok('Image::Randim::Source::Desktoppr');
     use_ok('Image::Randim::Source::Unsplash');
 }
 
