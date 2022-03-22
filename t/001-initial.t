@@ -83,9 +83,14 @@ ok $source->timeout(25), 'timeout on integer';
 
 ## Test actual get
 ##
+## Unsplash rate-limits API requests causing CPAN to fail tests so
+## it is excluded
+
 $source = Image::Randim::Source->new;
 $source->set_random_provider();
-ok $image = $source->get_image, 'Source get_image';
-ok length($image->url) > 5, 'Image URL has more than 10 characters';
+if ($source->name ne 'Unsplash') {
+    ok $image = $source->get_image, 'Source get_image';
+    ok length($image->url) > 5, 'Image URL has more than 10 characters';
+}
 
 done_testing;
